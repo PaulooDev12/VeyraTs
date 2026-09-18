@@ -2,7 +2,6 @@ import { State } from './state.js';
 import { DOMUtils } from './domUtils.js';
 import { Client } from './Client.js';
 import { DomHandler } from './domManager.js';
-import { GlRenderer } from './webGL/glShaderRender.js';
 import { VHSRenderer } from './webGL/GLVhs.js';
 const api = new Client();
 const data = await api.get('src/data.json');
@@ -28,25 +27,33 @@ document.addEventListener('mousemove', (event) => {
         y: event.clientY
     });
 });
-const shaderRender = new GlRenderer('screen');
-shaderRender.cleanScreen(0.1, 0.1, 0.1, 1.0);
-shaderRender.drawSquare();
 const canvas = document.getElementById('vhs-screen');
 if (canvas) {
-    // 2. Instancia o seu Renderer modificado
     const renderer = new VHSRenderer(canvas);
-    // 3. Carrega a imagem e liga o loop
-    renderer.loadTexture('https://picsum.photos')
+    renderer.loadTexture('/imgs/content.png')
         .then(() => {
         renderer.init();
         console.log("Efeito VHS iniciado com sucesso!");
     })
         .catch(err => console.error("Falha ao carregar textura:", err));
-    // INTERATIVIDADE: Altera a distorção da lente baseada no movimento do mouse
     window.addEventListener('mousemove', (evento) => {
-        // Mapeia a posição X do mouse para um valor decimal entre 0.0 e 1.5
         const porcentagemX = evento.clientX / window.innerWidth;
         renderer.forca = porcentagemX * 1.5;
+    });
+}
+const shader = DOMUtils.getElement('#shader');
+if (shader) {
+    const rednerer = new VHSRenderer(shader);
+    rednerer.loadTexture('/imgs/wpp.png')
+        .then(() => {
+        rednerer.init();
+        console.log("Render carregado nessa porra!!!!!");
+    })
+        .catch(err => console.error("Num funcionô :("));
+    shader.addEventListener('mousemove', (ev) => {
+        const percentY = ev.clientY / window.innerWidth;
+        rednerer.distorcion = Math.sin(Math.sqrt(percentY));
+        rednerer.forca = percentY * 3.3;
     });
 }
 //# sourceMappingURL=script.js.map

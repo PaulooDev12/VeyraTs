@@ -32,7 +32,6 @@ export class VHSRenderer {
         if (!gl.getProgramParameter(programa, gl.LINK_STATUS)) {
             throw new Error(`Erro ao linkar programa: ${gl.getProgramInfoLog(programa)}`);
         }
-        // Buscando locais na GPU (Devem bater exatamente com o .frag)
         this.timeLocation = gl.getUniformLocation(programa, "u_time");
         this.distorcionLocation = gl.getUniformLocation(programa, "u_distorcion");
         this.forcaLocation = gl.getUniformLocation(programa, "u_forca");
@@ -64,7 +63,6 @@ export class VHSRenderer {
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         gl.bufferData(gl.ARRAY_BUFFER, geometry, gl.STATIC_DRAW);
         const stride = 4 * Float32Array.BYTES_PER_ELEMENT;
-        // CORREÇÃO: "a_position" corrigido (estava "a_positon")
         const aPosition = gl.getAttribLocation(this.program, "a_position");
         gl.enableVertexAttribArray(aPosition);
         gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, stride, 0);
@@ -100,9 +98,8 @@ export class VHSRenderer {
         const gl = this.gl;
         const tempoDecorrido = (performance.now() - this.startTime) / 1000.0;
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT); // Faltava limpar a tela a cada frame!
+        gl.clear(gl.COLOR_BUFFER_BIT);
         gl.uniform1f(this.timeLocation, tempoDecorrido);
-        // CORREÇÃO: Passando o local correto distorcionLocation aqui
         gl.uniform1f(this.distorcionLocation, this.distorcion);
         gl.uniform1f(this.forcaLocation, this.forca);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

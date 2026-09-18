@@ -4,6 +4,7 @@ import { Client } from './Client.js';
 import { DomHandler } from './domManager.js';
 import { GlRenderer } from './webGL/glShaderRender.js';
 import { VHSRenderer } from './webGL/GLVhs.js';
+import { ShaderRenderer } from './webGL/RenderShader.js';
 
 
 
@@ -66,4 +67,20 @@ if (canvas) {
         const porcentagemX = evento.clientX / window.innerWidth;
         renderer.forca = porcentagemX * 1.5; 
     });
+}
+
+const shader = DOMUtils.getElement('#shader')! as HTMLCanvasElement;
+if(shader) {
+  const rednerer = new VHSRenderer(shader);
+  rednerer.loadTexture('/imgs/wpp.png')
+  .then(() => {
+    rednerer.init();
+    console.log("Render carregado nessa porra!!!!!");
+  })
+  .catch(err => console.error("Num funcionô :("));
+  shader.addEventListener('mousemove', (ev) => {
+    const percentY = ev.clientY / window.innerWidth;
+    rednerer.distorcion = Math.sin(Math.sqrt(percentY));
+    rednerer.forca = percentY * 3.3;
+  })
 }
