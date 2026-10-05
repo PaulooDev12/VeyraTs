@@ -3,6 +3,8 @@ import { DOMUtils } from './domUtils.js';
 import { Client } from './Client.js';
 import { DomHandler } from './domManager.js';
 import { VHSRenderer } from './webGL/GLVhs.js';
+import { ShaderRenderer } from './webGL/RenderShader.js';
+import { blurShaderRenderer } from './webGL/blurRenderer.js';
 const api = new Client();
 const data = await api.get('src/data.json');
 console.log(data);
@@ -27,33 +29,29 @@ document.addEventListener('mousemove', (event) => {
         y: event.clientY
     });
 });
-const canvas = document.getElementById('vhs-screen');
-if (canvas) {
-    const renderer = new VHSRenderer(canvas);
-    renderer.loadTexture('/imgs/content.png')
-        .then(() => {
-        renderer.init();
-        console.log("Efeito VHS iniciado com sucesso!");
-    })
-        .catch(err => console.error("Falha ao carregar textura:", err));
-    window.addEventListener('mousemove', (evento) => {
-        const porcentagemX = evento.clientX / window.innerWidth;
-        renderer.forca = porcentagemX * 1.5;
+const vhsCanvas = document.getElementById('vhs-screen');
+if (vhsCanvas) {
+    const vhs = new VHSRenderer(vhsCanvas);
+    vhs.setTexture('/imgs/content.png').then(() => {
+        vhs.start();
+    }).catch(err => console.error("Erro ao carregar a imagem ", err));
+}
+const bluredShader = DOMUtils.getElement('#blur');
+if (bluredShader) {
+    const renderer = new blurShaderRenderer(bluredShader);
+    renderer.setTexture('/imgs/content.png').then(() => {
+        renderer.start();
+        console.log("renderer iniciado");
+    }).catch((err) => {
+        console.error("Erro ao carregar textura", err);
     });
 }
-const shader = DOMUtils.getElement('#shader');
-if (shader) {
-    const rednerer = new VHSRenderer(shader);
-    rednerer.loadTexture('/imgs/wpp.png')
-        .then(() => {
-        rednerer.init();
-        console.log("Render carregado nessa porra!!!!!");
-    })
-        .catch(err => console.error("Num funcionô :("));
-    shader.addEventListener('mousemove', (ev) => {
-        const percentY = ev.clientY / window.innerWidth;
-        rednerer.distorcion = Math.sin(Math.sqrt(percentY));
-        rednerer.forca = percentY * 3.3;
-    });
+// dom utils é uma função da biblioteca 
+const chr = DOMUtils.getElement('#chr');
+if (chr) {
+    const shaderRender = new ShaderRenderer(chr);
+    shaderRender.setTexture('/imgs/wpp.png').then(() => {
+        shaderRender.start();
+    }).catch((err) => console.error(err));
 }
 //# sourceMappingURL=script.js.map

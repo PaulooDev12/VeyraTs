@@ -1,19 +1,9 @@
-export declare class ShaderRenderer {
-    private gl;
-    private program;
-    private positionLocation;
-    private texCoordLocation;
-    private timeLocation;
-    private intensidadeLocation;
-    private textureLocation;
-    private startTime;
+import { BaseGLSLShaderRenderer } from './baseShaderRender';
+export declare class ShaderRenderer extends BaseGLSLShaderRenderer {
+    private texture;
     intensidade: number;
     constructor(canvas: HTMLCanvasElement);
-    private createProgram;
-    private compileShader;
-    private setupGeometry;
-    loadTexture(url: string): Promise<void>;
-    init(): void;
-    private loop;
+    setTexture(url: string): Promise<void>;
+    protected onRender(elapsedTime: number): void;
 }
 //# sourceMappingURL=RenderShader.d.ts.map

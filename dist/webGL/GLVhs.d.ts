@@ -1,19 +1,10 @@
-export declare class VHSRenderer {
-    private canvas;
-    private gl;
-    private program;
-    private timeLocation;
-    private distorcionLocation;
-    private forcaLocation;
-    private startTime;
-    distorcion: number;
+import { BaseGLSLShaderRenderer } from './baseShaderRender';
+export declare class VHSRenderer extends BaseGLSLShaderRenderer {
     forca: number;
-    constructor(canvasElement: HTMLCanvasElement);
-    private createProgram;
-    private compileShader;
-    private configBufferAndAttributes;
-    loadTexture(url: string): Promise<void>;
-    init(): void;
-    private loop;
+    distorcion: number;
+    private texture;
+    constructor(canvas: HTMLCanvasElement);
+    setTexture(url: string): Promise<void>;
+    protected onRender(elapsedTime: number): void;
 }
 //# sourceMappingURL=GLVhs.d.ts.map

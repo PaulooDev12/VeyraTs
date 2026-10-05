@@ -2,85 +2,61 @@ import { State } from './state.js';
 import { DOMUtils } from './domUtils.js';
 import { Client } from './Client.js';
 import { DomHandler } from './domManager.js';
-import { GlRenderer } from './webGL/glShaderRender.js';
 import { VHSRenderer } from './webGL/GLVhs.js';
 import { ShaderRenderer } from './webGL/RenderShader.js';
+import { blurShaderRenderer } from './webGL/blurRenderer.js';
 
-
-
-const api = new Client();
-const data = await api.get('src/data.json')
-console.log(data)
-const texto = DOMUtils.getElement('#texto')!;
-const handler = new DomHandler(texto);
-handler.addClass("azul");
-
-interface MousePosition {
-    x: number;
-    y: number;
+interface MouseState{
+  x: number;
+  y: number;
+  normX: number;
+  normY: number;
 }
-const mouseState = new State<MousePosition>({
-    x: 0,
-    y: 0
-})
-const text = new DomHandler(
-  DOMUtils.getElement('#texto')!
-);
+const mouseState = new State<MouseState>({x: 0, y: 0, normX: 0, normY: 0});
 
-const card = new DomHandler(
-  DOMUtils.getElement('#card')!
-);
+const vhsCanvas = DOMUtils.getElement('#vhs-screen') as HTMLCanvasElement;
+const blurCanvas = DOMUtils.getElement('#blur') as HTMLCanvasElement;
+const chrCanvas = DOMUtils.getElement('#chr') as HTMLCanvasElement;
 
-mouseState.subscribe(({ x, y }) => {
-  text.setText(`X: ${x} | Y: ${y}`);
+let vhs: VHSRenderer | null = null;
+let blur: blurShaderRenderer | null = null;
+let chr: ShaderRenderer | null = null;
+
+if(vhsCanvas) {
+  vhs = new VHSRenderer(vhsCanvas);
+  vhs.setTexture('/imgs/content.png').then(() => vhs?.start())
+}
+
+if (blurCanvas) {
+    blur = new blurShaderRenderer(blurCanvas);
+    blur.setTexture('/imgs/content.png').then(() => blur?.start());
+}
+
+if (chrCanvas) {
+    chr = new ShaderRenderer(chrCanvas);
+    chr.setTexture('/imgs/wpp.png').then(() => chr?.start());
+}
+
+mouseState.subscribe(({x, y, normX, normY}) => {
+    if(vhs){
+      vhs.distorcion = normX * 0.20;
+      vhs.forca = normY * 0.5;
+    }
+
+    if(blur){
+      blur.directionX = ((normY - 0.5) * 5.0) * -1;
+      blur.directionY = (normX - 0.5) * 5.0;
+    }
+    if(chr){
+      chr.intensidade = Math.sin(normX * Math.PI) * 1.5;
+    }
 });
 
-mouseState.subscribe(({ x, y }) => {
-  card.setRotation(x, y);
-});
-
-document.addEventListener('mousemove', (event) => {
+window.addEventListener('mousemove', (event) => {
   mouseState.set({
     x: event.clientX,
-    y: event.clientY
-  });
-});
-
-
-const canvas = document.getElementById('vhs-screen') as HTMLCanvasElement;
-
-
-if (canvas) {
-
-    const renderer = new VHSRenderer(canvas);
-
-
-    renderer.loadTexture('/imgs/content.png')
-        .then(() => {
-            renderer.init();
-            console.log("Efeito VHS iniciado com sucesso!");
-        })
-        .catch(err => console.error("Falha ao carregar textura:", err));
-
-
-    window.addEventListener('mousemove', (evento) => {
-        const porcentagemX = evento.clientX / window.innerWidth;
-        renderer.forca = porcentagemX * 1.5; 
-    });
-}
-
-const shader = DOMUtils.getElement('#shader')! as HTMLCanvasElement;
-if(shader) {
-  const rednerer = new VHSRenderer(shader);
-  rednerer.loadTexture('/imgs/wpp.png')
-  .then(() => {
-    rednerer.init();
-    console.log("Render carregado nessa porra!!!!!");
+    y: event.clientY,
+    normX: event.clientX / window.innerWidth,
+    normY: event.clientY / window.innerHeight,
   })
-  .catch(err => console.error("Num funcionô :("));
-  shader.addEventListener('mousemove', (ev) => {
-    const percentY = ev.clientY / window.innerWidth;
-    rednerer.distorcion = Math.sin(Math.sqrt(percentY));
-    rednerer.forca = percentY * 3.3;
-  })
-}
+})
